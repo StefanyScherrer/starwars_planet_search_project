@@ -1,5 +1,5 @@
 import { createContext } from 'react';
 
-const tableContext = createContext();
+const Context = createContext();
 
-export default tableContext;
+export default Context;
