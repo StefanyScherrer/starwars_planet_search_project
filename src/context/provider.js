@@ -50,27 +50,73 @@
 // Provider.propTypes = {
 //   children: PropTypes.any,
 // }.isRequires;
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Context from './context';
 
 function Provider({ children }) {
   const [listPlanets, setListPlanets] = useState([]);
-
-  const url = 'https://swapi.dev/api/planets';
-
+  const [planetInput, setPlanetInput] = useState('');
+  const [filterName, setFilterName] = useState([]);
+  const [selectColumn, setSelectColumn] = useState({
+    column: 'population',
+    comparison: 'maior que',
+    value: 0,
+  });
+  const [selectedFilters, setSelectedFilters] = useState([]);
+  const apiUrl = 'https://swapi.dev/api/planets';
   useEffect(() => {
     const fetchData = async () => {
-      const { results } = await fetch(url).then((response) => response.json());
+      const { results } = await fetch(apiUrl).then((response) => response.json());
       console.log(results);
       setListPlanets(results);
     };
     fetchData();
   }, []);
+  const dataFilter = useCallback((planets, name, numericValues) => (
+    numericValues.length === 0
+      ? planets.filter((planet) => planet.name.includes(name))
+      : numericValues.reduce(
+        (acc, { column, comparison, value }) => acc.filter((planet) => {
+          switch (comparison) {
+          case 'maior que':
+            return (
+              planet.name.includes(name)
+                  && planet[column] > Number(value)
+            );
+          case 'menor que':
+            return (
+              planet.name.includes(name)
+                  && planet[column] < Number(value)
+            );
+          case 'igual a':
+            return (
+              planet.name.includes(name)
+                  && planet[column] === value
+            );
+          default:
+            return planet.name.includes(name);
+          }
+        }),
+        planets,
+      )
+  ), []);
 
-  const listData = useMemo(() => ({
-    listPlanets,
-  }), [listPlanets]);
+  const listData = useMemo(
+    () => ({
+      listPlanets,
+      planetInput,
+      setPlanetInput,
+      filterName,
+      setFilterName,
+      selectColumn,
+      setSelectColumn,
+      selectedFilters,
+      setSelectedFilters,
+      dataFilter,
+    }),
+    [listPlanets, planetInput, filterName, selectColumn, selectedFilters, dataFilter],
+  );
 
   return (
     <Context.Provider value={ listData }>
@@ -78,9 +124,7 @@ function Provider({ children }) {
     </Context.Provider>
   );
 }
-
 Provider.propTypes = {
   children: PropTypes.func,
 }.isRequired;
-
 export default Provider;

@@ -85,8 +85,9 @@ import React, { useContext } from 'react';
 import Context from '../context/context';
 
 export default function Table() {
-  const { listPlanets } = useContext(Context);
-  console.log(listPlanets);
+  const { listPlanets, planetInput, selectedFilters, dataFilter } = useContext(Context);
+  const data = dataFilter(listPlanets, planetInput, selectedFilters);
+  console.log(data);
   return (
     <div>
       <table border="1" cellSpacing="0">
@@ -109,7 +110,7 @@ export default function Table() {
         </thead>
         <tbody>
           {
-            listPlanets.map((planet) => (
+            data.map((planet) => (
               <tr key={ planet.name }>
                 <td>{planet.name}</td>
                 <td>{planet.rotation_period}</td>
