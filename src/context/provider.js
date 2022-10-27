@@ -50,6 +50,7 @@
 // Provider.propTypes = {
 //   children: PropTypes.any,
 // }.isRequires;
+
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Context from './context';
@@ -57,22 +58,50 @@ import Context from './context';
 function Provider({ children }) {
   const [listPlanets, setListPlanets] = useState([]);
   const [planetInput, setPlanetInput] = useState('');
-  const [filterName, setFilterName] = useState([]);
+  // const [filterName, setFilterName] = useState([]);
+  // const [selectColumn, setSelectColumn] = useState({
+  //   column: 'population',
+  //   comparison: 'maior que',
+  //   value: 0,
+  // });
+  const [selectedFilters, setSelectedFilters] = useState([]);
+  const [columnList, setColumnList] = useState([
+    'population',
+    'orbital_period',
+    'diameter',
+    'rotation_period',
+    'surface_water',
+  ]);
+
   const [selectColumn, setSelectColumn] = useState({
-    column: 'population',
+    column: columnList[0],
     comparison: 'maior que',
     value: 0,
   });
-  const [selectedFilters, setSelectedFilters] = useState([]);
+
+  const [sortList, setSorList] = useState([
+    'population',
+    'orbital_period',
+    'diameter',
+    'rotation_period',
+    'surface_water',
+  ]);
+
+  const [sortColumn, setSortColumn] = useState({
+    column: sortList[0],
+    sort: 'ASC',
+  });
+
   const apiUrl = 'https://swapi.dev/api/planets';
-  useEffect(() => {
-    const fetchData = async () => {
-      const { results } = await fetch(apiUrl).then((response) => response.json());
-      console.log(results);
-      setListPlanets(results);
-    };
-    fetchData();
-  }, []);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const { results } = await fetch(apiUrl).then((response) => response.json());
+  //     setListPlanets(results);
+  //   };
+  //   fetchData();
+  // }, []);
+
   const dataFilter = useCallback((planets, name, numericValues) => (
     numericValues.length === 0
       ? planets.filter((planet) => planet.name.includes(name))
@@ -102,20 +131,42 @@ function Provider({ children }) {
       )
   ), []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const { results } = await fetch(apiUrl).then((response) => response.json());
+      setListPlanets(results);
+    };
+    fetchData();
+  }, []);
+
   const listData = useMemo(
     () => ({
       listPlanets,
+      setListPlanets,
       planetInput,
       setPlanetInput,
-      filterName,
-      setFilterName,
+      // filterName,
+      // setFilterName,
       selectColumn,
       setSelectColumn,
       selectedFilters,
       setSelectedFilters,
       dataFilter,
+      columnList,
+      setColumnList,
+      sortList,
+      sortColumn,
+      setSorList,
+      setSortColumn,
     }),
-    [listPlanets, planetInput, filterName, selectColumn, selectedFilters, dataFilter],
+    [listPlanets,
+      planetInput,
+      dataFilter,
+      selectColumn,
+      selectedFilters,
+      columnList,
+      sortList,
+      sortColumn],
   );
 
   return (
@@ -124,7 +175,9 @@ function Provider({ children }) {
     </Context.Provider>
   );
 }
+
 Provider.propTypes = {
   children: PropTypes.func,
 }.isRequired;
+
 export default Provider;
